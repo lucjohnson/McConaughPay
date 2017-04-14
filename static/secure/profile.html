@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>McConaughPay | Track Your Alrights</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/css/materialize.min.css">
+</head>
+<body ng-app="Authentication" ng-controller="AuthController" class="container">
+	<h1>Alright, alright, alright. You're all signed in!</h1>
+    <img src="https://media.giphy.com/media/g5zvwUa9720pO/giphy.gif" alt="">
+	<h3>Nice to see you, {{DisplayName}}</h3>
+	<a href="/api/v1/signout" class="btn red">Sign out</a>
+    <a href="/editProfile.html" class="btn">Edit Your Profile</a>
+    <h2>Your Accounts</h2>
+    <table class="bordered">
+        <tr>
+            <th>Account Number</th>
+            <th>Account Name</th>
+            <th>Account Type</th>
+            <th>Balance (Alrights)</th>
+        </tr>
+        <tr ng-repeat="account in AccountData | orderBy: 'AccountTypeID'"> 
+            <td>{{account.AccountID}}</td>
+            <td>{{account.AccountName}}</td>
+            <td>{{account.AccountTypeName}}</td>
+            <td>{{account.Balance | number:2}}</td>    
+        </tr>
+    </table>
+    <!-- Modal Trigger -->
+    <button data-target="modal1" class="btn modal-trigger">Add Account</button>
+    <button data-target="modal2" class="btn modal-trigger">Edit an account name</button>
+    <button data-target="modal3" class="btn modal-trigger red">Delete an account</button>
+
+    <!-- Modal Structure -->
+    <div id="modal1" class="modal">
+        <div class="modal-content">
+            <h4>Add Account</h4>
+            <div ng-show="addAccountAlert">{{addAccountAlert}}</div>
+            <form ng-submit="addAccount(account)">
+                <div class="row">
+                    <div class="col s12">
+                        <label for="accountName">Account Name</label>
+                        <input required name="accountName" type="text" class="validate" ng-model="account.name">
+                    </div>
+                </div>
+                <div class="row">
+                    <input type="submit" class="btn" value="Create Account">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+        <a href="#!" class=" modal-action modal-close waves-effect waves-red btn-flat">Cancel</a>
+        </div>
+    </div>
+    
+    <!-- Modal Structure -->
+    <div id="modal2" class="modal">
+        <div class="modal-content">
+            <h4>Edit Account</h4>
+            <div ng-show="editAccountAlert">{{editAccountAlert}}</div>
+            <form ng-submit="editAccount(account)">
+                <div class="row">
+                    <div class="col s12">
+                        <label for="accountId">Which account?</label>
+                        <input required name="accountId" type="text" class="validate" ng-model="account.id">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col s12">
+                        <label for="newName">New Name</label>
+                        <input required name="newName" type="text" class="validate" ng-model="account.newName">
+                    </div>
+                </div>
+                <div class="row">
+                    <input type="submit" class="btn" value="Edit Account">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+        <a href="#!" class=" modal-action modal-close waves-effect waves-red btn-flat">Cancel</a>
+        </div>
+    </div>
+    
+    <!-- Modal Structure -->
+    <div id="modal3" class="modal">
+        <div class="modal-content">
+            <h4>Delete Account</h4>
+            <div ng-show="deleteAccountAlert">{{deleteAccountAlert}}</div>
+            <form ng-submit="deleteAccount(account)">
+                <div class="row">
+                    <div class="col s12">
+                        <label for="accountId">Which account?</label>
+                        <input required name="accountId" type="text" class="validate" ng-model="account.id">
+                    </div>
+                </div>
+                <div class="row">
+                    <input type="submit" class="btn red" value="Delete this Account">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+        <a href="#!" class=" modal-action modal-close waves-effect waves-red btn-flat">Cancel</a>
+        </div>
+    </div>
+    
+    <h2>Your Transactions</h2>
+    <table class="bordered">
+        <tr>
+            <th>Date</th>
+            <th>Initiated By</th>
+            <th>Transfer From</th>
+            <th>Transfer To</th>
+            <th>Amount (Alrights)</th>
+            <th>Description</th>      
+        </tr>
+        <tr ng-repeat="transaction in TransactionData | orderBy: '-Date' | limitTo : totalTransactionsDisplayed">
+            <td>{{transaction.Date | date:'short'}}</td>
+            <td>{{transaction.InitiatedBy}}</td>
+            <td>{{transaction.Source}}</td>
+            <td>{{transaction.Destination}}</td>
+            <td>{{transaction.Amount | number:2}}</td>
+            <td>{{transaction.Message}}</td>    
+        </tr>
+    </table>
+    <button class="btn blue" ng-if="TransactionData.length > 20 && totalTransactionsDisplayed < TransactionData.length" ng-click="loadMore()">Load More</button>
+    <!-- Modal Trigger -->
+    <button data-target="modal4" class="btn modal-trigger">Create Transaction</button>
+
+    <!-- Modal Structure -->
+    <div id="modal4" class="modal">
+        <div class="modal-content">
+        <h4>Transfer some of your alrights</h4>
+        <div ng-show="transactionAlert">{{transactionAlert}}</div>
+        <form ng-submit="addTransaction(transaction)">
+            <div class="row">
+                <div class="col s12">
+                    <label for="sourceAccount">Source Account Number</label>
+                    <input required name="sourceAccount" type="text" class="validate" ng-model="transaction.Source">
+                </div>
+                <div class="col s12">
+                    <label for="transactionType">Transaction Type</label>
+                    <select required name="transactionType" class="browser-default" ng-model="transaction.TransactionType">
+                        <option value="" disabled selected>Choose your option</option>
+                        <option value="0">Transfer to one of your accounts</option>
+                        <option value="1">Transfer to another person</option>
+                    </select>
+                </div>
+                <div class="col s12">
+                    <label for="destination">Destination Account Number or Email</label>
+                    <input required name="destination" type="text" class="validate" ng-model="transaction.Destination">
+                </div>
+                <div class="col s12">
+                    <label for="amount">Amount</label>
+                    <input required name="amount" type="text" class="validate" ng-model="transaction.Amount">
+                </div>
+                <div class="col s12">
+                    <label for="message">Message (optional)</label>
+                    <input name="message" type="text" class="validate" ng-model="transaction.Message">
+                </div>
+            </div>
+            <div class="row">
+                <input type="submit" class="btn" value="Send Transaction">
+                <img src="/img/ajax-spinner-sm.gif" ng-if="processTransaction">
+            </div>
+        </form>
+        </div>
+        <div class="modal-footer">
+        <a href="#!" class=" modal-action modal-close waves-effect waves-red btn-flat">Cancel</a>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/js/materialize.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-rc.2/angular.min.js"></script>
+    <script src="/js/app.js"></script>
+    <script>
+        $(document).ready(function() {
+            // the "href" attribute of .modal-trigger must specify the modal ID that wants to be triggered
+            $('.modal-trigger').leanModal();
+        });
+    </script>
+</body>
+</html>
